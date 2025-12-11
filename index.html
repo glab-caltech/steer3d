@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Steer3D.">
+  <meta name="keywords" content="Steer3D, text-steerable diffusion, multimodal 3D generation, controllable 3D generation">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Steer3D</title>
+
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.png">
+
+
+  <!-- JQuery, scripts etc -->
+
+  <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+
+  <style>
+    .half-width {
+      width: 50%; /* Set width to 30% of the parent container */
+      margin: 0; /* Center the div */
+      text-align: center; /* Center-align text */
+      float:left;
+    }
+    .footer{
+      background-color: #ffffff;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .flex-container {
+        flex-direction: row;
+    }
+    .middle-text {
+        font-size: 15px;
+        text-align: center;
+        color: #333;
+        min-width: 120px;
+        align-self: center;          /* Ensures perfect vertical centering even if models differ slightly */
+    }
+    /* for demo gallery, default = 5 columns on tablet & desktop */
+    .thumbnail-grid .column {
+      flex-basis: 20%;   /* 100% ÷ 5 */
+      max-width: 20%;
+    }
+    /* On mobile: force 3 columns */
+    @media screen and (max-width: 768px) {
+      .thumbnail-grid .column {
+        flex-basis: 33.333%;   /* 100% ÷ 3 */
+        max-width: 33.333%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">Feedforward 3D Editing via Text-Steerable Image-to-3D</h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://ziqi-ma.github.io/" target="_blank" rel="noopener noreferrer">Ziqi Ma</a>,</span>
+              <span class="author-block">
+              <span class="author-block">
+                <a href="https://www.linkedin.com/in/hongqiao-chen" target="_blank" rel="noopener noreferrer">Hongqiao Chen</a>,</span>
+              <span class="author-block">
+                <a href="http://www.yisongyue.com/" target="_blank" rel="noopener noreferrer">Yisong Yue</a>,</span>
+              <span class="author-block">
+                <a href="https://gkioxari.github.io/" target="_blank" rel="noopener noreferrer">Georgia
+                  Gkioxari</a></span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">California Institute of Technology</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- PDF Link. -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/pdf/2411.13550" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>pdf</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2411.13550" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <!-- Code Link. -->
+                <span class="link-block">
+                  <a href="https://github.com/ziqi-ma/Steer3D" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://huggingface.co/datasets/ziqima/Edit3D-Bench" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fa fa-database"></i>
+                    </span>
+                    <span>Benchmark</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://huggingface.co/datasets/ziqima/Edit3D-Bench" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fa fa-database"></i>
+                    </span>
+                    <span>Dataset</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <p style="font-size: 20px; color: black;">
+          We present <b>Steer3D</b>: a method to add text steerability to pretrained image-to-3D generative models. <b>Steer3D</b> adapts the ControlNet architecture to 3D generation. Training only on 100k-scale synthetic data, <b>Steer3D</b> and can perform diverse edits, and even generalize to objects in iPhone captures or AI-generated objects from image generation models.
+          Scroll down for an interactive demo!
+        </p>
+        <div style="height: 30px;"></div>
+        <video id="teaser" autoplay muted loop playsinline height="100%">Add commentMore actions
+          <source src="static/videos/video_website.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- ObjaversePart. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+        <h2 class="title is-3">Feedforward 3D Editing on Edit3D-Bench</h2>
+            <p style="font-size: 20px; color: black;">
+              Steer3D, our feedforward model which injects text steering to pretrained image-to-3D models, is able to edit diverse objects. Below we show Steer3D's predictions on examples from Edit3D-Bench.
+            </p>
+        </div>
+      </div>
+      <div class="columns is-centered has-text-centered">
+          <div class="content has-text-justified">
+            
+              <div class="flex-container">
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/antler/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        camera-controls
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Replace the natural antlers with glowing neon blue
+                    </div>
+                    <model-viewer
+                        src="static/glbs/antler/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        camera-controls
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/crab/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        exposure="1.2"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Replace legs with sleek robotic lims colored silver
+                    </div>
+                    <model-viewer
+                        src="static/glbs/crab/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        exposure="1.2"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/pumpkin/source.glb"
+                        style="float:center; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        camera-controls
+                        shadow-intensity="1"
+                        field-of-view="9deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                       Remove the green top part of the pumpkin
+                    </div>
+                    <model-viewer
+                        src="static/glbs/pumpkin/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        camera-controls
+                        shadow-intensity="1"
+                        field-of-view="8.7deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/knob/source.glb"
+                        style="float:left; width: 35%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        camera-controls
+                        shadow-intensity="1"
+                        field-of-view="9deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                       Remove the knob from the side of the cup
+                    </div>
+                    <model-viewer
+                        src="static/glbs/knob/pred.glb"
+                        style="float:left; width: 35%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        camera-controls
+                        shadow-intensity="1"
+                        camera-controls
+                        field-of-view="9deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/studs/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        exposure="1.2"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Replace the spherical studs on the body with bright LED lights
+                    </div>
+                    <model-viewer
+                        src="static/glbs/studs/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        exposure="1.2"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/chair/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Replace the hollow backrest with a transparent blue glass panel
+                    </div>
+                    <model-viewer
+                        src="static/glbs/chair/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/lampshade/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Replace the black lampshade with a metallic gold lampshade
+                    </div>
+                    <model-viewer
+                        src="static/glbs/lampshade/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/bench/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        camera-orbit="10deg 65deg 3m"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Remove one leg from the bench
+                    </div>
+                    <model-viewer
+                        src="static/glbs/bench/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        camera-orbit="10deg 65deg 3m"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/lid/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        field-of-view="11.5deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Add a wooden lid on top of the barrel
+                    </div>
+                    <model-viewer
+                        src="static/glbs/lid/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D segmentation - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/ufo/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Replace the flat disc surface with a textured carbon fiber
+                    </div>
+                    <model-viewer
+                        src="static/glbs/ufo/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/teapot/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        exposure="1.5"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Make the texture of the teapot rough and rustic
+                    </div>
+                    <model-viewer
+                        src="static/glbs/teapot/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        exposure="1.5"
+                        camera-controls
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/addhair/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        field-of-view="11deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Add short hair on top of the head
+                    </div>
+                    <model-viewer
+                        src="static/glbs/addhair/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        field-of-view="11deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/crossbow/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        field-of-view="11deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Remove the string from the crossbow
+                    </div>
+                    <model-viewer
+                        src="static/glbs/crossbow/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        field-of-view="11deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                <div class="half-width">
+                    <div class="flex-container" style="display: flex; align-items: center; gap: 5px;">
+                    <model-viewer
+                        src="static/glbs/armrest/source.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        field-of-view="11deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    <div class="middle-text" style="text-align: center; width: 15%;">
+                        Make the finish of the armrests a polished chrome
+                    </div>
+                    <model-viewer
+                        src="static/glbs/armrest/pred.glb"
+                        style="float:left; width: 50%; aspect-ratio: 1 / 1.1;"
+                        alt="3D object - interactive"
+                        shadow-intensity="1"
+                        camera-controls
+                        field-of-view="11deg"
+                        touch-action="pan-y">
+                    </model-viewer>
+                    </div>
+                </div>
+
+                
+            
+            </div>
+          </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+  
+      <div class="columns is-centered has-text-centered mb-6">
+        <div class="column is-full-width">
+          <h2 class="title is-3">3D Editing of In-The-Wild Objects</h2>
+          <p style="font-size: 20px; color: black;">
+            <b>Steer3D</b>, despite only trained on synthetic data based on Objaverse assets, can generalize to "in-the-wild" objects, such as objects from iPhone photos or online images.
+          </p>
+        </div>
+      </div>
+  
+      <div class="columns is-vcentered">
+        
+        <!-- LEFT: Object Gallery + Edit Dropdown -->
+        <div class="column is-4" style="min-width: 450px;">
+  
+          <h3 class="title is-5 mb-4">Select an object to edit</h3>
+
+          <div class="columns is-mobile is-multiline thumbnail-grid">
+            <!-- Repeat this block 15 times with your real images -->
+            <div class="column">
+              <figure class="image is-1by1 thumbnail-obj active" data-id="plant">
+                <img src="static/images/plant.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="stanley">
+                <img src="static/images/stanley.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column">
+              <figure class="image is-1by1 thumbnail-obj active" data-id="container">
+                <img src="static/images/container.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column">
+              <figure class="image is-1by1 thumbnail-obj" data-id="game">
+                <img src="static/images/game.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="bear">
+                <img src="static/images/bear.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="cone">
+                <img src="static/images/cone.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="bin">
+                <img src="static/images/bin.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="hoodie">
+                <img src="static/images/hoodie.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="chair">
+                <img src="static/images/chair.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="spyro">
+                <img src="static/images/spyro.jpg" style="border-radius: 12px; object-fit: contain;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="car">
+                <img src="static/images/car.jpg" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="mario">
+                <img src="static/images/mario.jpg" style="border-radius: 12px; object-fit: contain;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="table">
+                <img src="static/images/table.jpg" style="border-radius: 12px; object-fit: contain;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="boy">
+                <img src="static/images/boy_blue.png" style="border-radius: 12px; object-fit: cover;">
+              </figure>
+            </div>
+            <div class="column is-third">
+              <figure class="image is-1by1 thumbnail-obj" data-id="spray">
+                <img src="static/images/spray.jpg" style="border-radius: 12px; object-fit: contain;">
+              </figure>
+            </div>
+           
+            
+          </div>
+  
+          <!-- Dropdown appears after selecting an object -->
+          <div id="editPanel" class="mt-5">
+            <nav class="panel">
+              <p class="panel-heading">Choose an edit</p>
+              <div class="panel-block">
+                <div class="select is-fullwidth">
+                  <select id="editSelect"></select>
+                </div>
+              </div>
+            </nav>
+          </div>
+  
+        </div>
+  
+        <!-- RIGHT: Before → After (single row, big models) -->
+        <div class="column">
+  
+          <div style="display: flex; align-items: center; justify-content: center; gap: 20px; min-height: 300px;">
+  
+            <model-viewer
+                id="originalModel"
+                src="static/glbs/wild-container/source.glb"
+                camera-controls
+                shadow-intensity="1"
+                exposure="1.4"
+                camera-orbit="0deg 70deg 105%"
+                style="width: 35%; height: 300px; background: #fff; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);"
+                touch-action="pan-y">
+            </model-viewer>
+  
+            <span style="font-size: 4rem; color: #999; font-weight: bold;">→</span>
+  
+            <model-viewer
+                id="editedModel"
+                src="static/glbs/wild-container/rustic.glb"
+                camera-controls
+                shadow-intensity="1"
+                exposure="1.4"
+                camera-orbit="0deg 70deg 105%"
+                style="width: 35%; height: 300px; background: #fff; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);"
+                touch-action="pan-y">
+            </model-viewer>
+  
+          </div>
+  
+        </div>
+      </div>
+    </div>
+  
+    </div>
+  </section>
+  
+  <!-- Model Viewer -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  
+  <script>
+  // All available objects and their edits
+  const objects = {
+    container: {
+      original: "static/glbs/wild-container/source.glb",
+      camera: "45deg 70deg 105%",
+      edits: [
+        { label: "Change its texture into a rustic metal texture",glb: "static/glbs/wild-container/rustic.glb" },
+        { label: "Add a lid on top of the container",       glb: "static/glbs/wild-container/lid.glb" },
+        { label: "Add two large handles to the sides of the container",glb: "static/glbs/wild-container/handle.glb" }
+      ]
+    },
+    game: {
+      original: "static/glbs/wild-game/source.glb",
+      camera: "-30deg 70deg 105%",
+      edits: [
+        { label: "Add a large charging stand base",  glb: "static/glbs/wild-game/charging.glb"},
+        { label: "Put a big antenna onto the gaming console",glb: "static/glbs/wild-game/antenna.glb", fieldOfView: "36deg"}
+      ]
+    },
+    plant: {
+      original: "static/glbs/wild-plant/source.glb",
+      camera: "0deg 60deg 105%",
+      edits: [
+        { label: "Add red flower on top",       glb: "static/glbs/wild-plant/flower.glb", fieldOfView: "33deg" },
+        { label: "Change the color of the pot into deep brown",glb: "static/glbs/wild-plant/brown.glb" }
+      ]
+    },
+    boy: {
+      original: "static/glbs/wild-boy/source.glb",
+      camera: "-40deg 75deg 100%",
+      fieldOfView: "9deg",
+      edits: [
+        { label: "Change the boy's jacket to red",  glb: "static/glbs/wild-boy/jacket.glb" },
+        { label: "Remove the cat ears from the boy", glb: "static/glbs/wild-boy/ear.glb", fieldOfView: "8.5deg" }
+      ]
+    },
+    hoodie: {
+      original: "static/glbs/wild-hoodie/source.glb",
+      camera: "-40deg 75deg 100%",
+      edits: [
+        { label: "Remove the hat from the top part of the hoodie",   glb: "static/glbs/wild-hoodie/hat.glb", fieldOfView: "13deg"  },
+        { label: "Change the color to red",   glb: "static/glbs/wild-hoodie/red.glb" , fieldOfView: "10deg"}
+      ]
+    },
+    cone: {
+      original: "static/glbs/wild-cone/source.glb",
+      camera: "20deg 75deg 100%",
+      edits: [
+        { label: "Turn the entire cone into a metallic silver texture",   glb: "static/glbs/wild-cone/silver.glb" },
+        { label: "Add a cap shaped light on top of the cone",   glb: "static/glbs/wild-cone/light.glb", fieldOfView: "11.5deg"  },
+        { label: "Remove the entire bottom base",   glb: "static/glbs/wild-cone/base.glb", fieldOfView: "10deg" },
+      ]
+    },
+    chair: {
+      original: "static/glbs/wild-chair/source.glb",
+      camera: "15deg 60deg 100%",
+      fieldOfView: "9deg",
+      edits: [
+        { label: "Remove the whole backrest",   glb: "static/glbs/wild-chair/backrest.glb", fieldOfView: "7deg"},
+        { label: "Make the chair legs dark wooden",   glb: "static/glbs/wild-chair/dark.glb" }
+      ]
+    },
+    stanley: {
+      original: "static/glbs/wild-stanley/source.glb",
+      camera: "15deg 60deg 100%",
+      edits: [
+        { label: "Remove the entire straw on top of the cup",   glb: "static/glbs/wild-stanley/straw.glb", fieldOfView: "10deg",},
+        { label: "Turn the white lid of the cup into green",   glb: "static/glbs/wild-stanley/green.glb"}
+      ]
+    },
+    car: {
+      original: "static/glbs/wild-car/source.glb",
+      camera: "15deg 70deg 100%",
+      edits: [
+        { label: "Give the car a camouflage pattern",   glb: "static/glbs/wild-car/camouflage.glb"},
+        { label: "Add a rear spoiler to the top of the car",   glb: "static/glbs/wild-car/spoiler.glb", fieldOfView: "34deg"},
+        { label: "Make the car blue",   glb: "static/glbs/wild-car/blue.glb"}
+      ]
+    },
+    bin: {
+      original: "static/glbs/wild-bin/source.glb",
+      camera: "35deg 70deg 100%",
+      edits: [
+        { label: "Add a handle on top of the lid",   glb: "static/glbs/wild-bin/handle.glb"},
+        { label: "Remove the wheels",   glb: "static/glbs/wild-bin/wheels.glb"}
+      ]
+    },
+    mario: {
+      original: "static/glbs/wild-mario/source.glb",
+      camera: "-45deg 65deg 100%",
+      fieldOfView: "9deg",
+      edits: [
+        { label: "Add a cape to the character",   glb: "static/glbs/wild-mario/cape.glb"},
+        { label: "Change the color of the hat and the shirt to blue",   glb: "static/glbs/wild-mario/blue.glb"}
+      ]
+    },
+    table: {
+      original: "static/glbs/wild-table/source.glb",
+      camera: "25deg 65deg 100%",
+      edits: [
+        { label: "Remove the cup and the plate",   glb: "static/glbs/wild-table/cupplate.glb", fieldOfView: "7.5deg"},
+        { label: "Remove the spoon on the table",   glb: "static/glbs/wild-table/spoon.glb"},
+        { label: "Add some moss to give the table an abanonded look",   glb: "static/glbs/wild-table/moss.glb"}
+      ]
+    },
+    spyro: {
+      original: "static/glbs/wild-spyro/source.glb",
+      camera: "-40deg 55deg 100%",
+      edits: [
+        { label: "Remove the wing of the dragon",   glb: "static/glbs/wild-spyro/wing.glb"},
+        { label: "Replace the horns with neon green horns",   glb: "static/glbs/wild-spyro/horn.glb"},
+        { label: "Add another central horn to the dragon",   glb: "static/glbs/wild-spyro/centralhorn.glb"}
+      ]
+    },
+    bear: {
+      original: "static/glbs/wild-bear/source.glb",
+      camera: "15deg 65deg 100%",
+      edits: [
+        { label: "Change the color of the fur to brown",   glb: "static/glbs/wild-bear/brown.glb"},
+        { label: "Give it a stone-like gray texture to turn it into a figurine",   glb: "static/glbs/wild-bear/stone.glb"}
+      ]
+    },
+    spray: {
+      original: "static/glbs/wild-spray/source.glb",
+      camera: "15deg 65deg 100%",
+      edits: [
+        { label: "Change the color of the top nozzle from black to yellow",   glb: "static/glbs/wild-spray/yellow.glb"}
+      ]
+    }
+  };
+  
+  const originalModel = document.getElementById('originalModel');
+  const editedModel   = document.getElementById('editedModel');
+  const editSelect    = document.getElementById('editSelect');
+  const thumbnails    = document.querySelectorAll('.thumbnail-obj');
+  const editPanel     = document.getElementById('editPanel');
+  
+  let currentObj = 'plant'; // default
+  
+  // Populate dropdown and load models
+  function loadObject(id) {
+    currentObj = id;
+    const obj = objects[id];
+
+    originalModel.src = obj.original;
+    originalModel.cameraOrbit = obj.camera;
+    originalModel.fieldOfView = obj.fieldOfView || "22deg";           // ← new line (you can change default)
+
+    // ────── 2. Edited ──────
+    const firstEdit = obj.edits[0];
+    editedModel.src         = firstEdit.glb;
+    editedModel.cameraOrbit = firstEdit.cameraOrbit || obj.camera; 
+    editedModel.fieldOfView = firstEdit.fieldOfView || obj.fieldOfView || "22deg";
+
+    // Update dropdown
+    editSelect.innerHTML = '';
+    obj.edits.forEach(edit => {
+      const opt = document.createElement('option');
+      opt.value = edit.glb;
+      opt.textContent = edit.label;
+      editSelect.appendChild(opt);
+    });
+    editSelect.value = obj.edits[0].glb;
+  
+    // Update active thumbnail
+    thumbnails.forEach(t => t.classList.toggle('active', t.dataset.id === id));
+  
+    // Show panel
+    editPanel.style.opacity = '1';
+    editPanel.style.pointerEvents = 'auto';
+  }
+  
+  // Click thumbnail → load that object
+  thumbnails.forEach(thumb => {
+    thumb.addEventListener('click', () => {
+      loadObject(thumb.dataset.id);
+    });
+  });
+  
+  // Dropdown change → update edited model
+  editSelect.addEventListener('change', () => {
+    const obj = objects[currentObj];
+    const edit = obj.edits.find(e => e.glb === editSelect.value);
+
+    editedModel.src = edit.glb;
+    editedModel.cameraOrbit = edit.cameraOrbit || obj.camera;
+
+    editedModel.fieldOfView = edit.fieldOfView || obj.fieldOfView || "22deg";
+  });
+  
+  // Camera sync
+  function syncCameras(a, b) {
+    a.addEventListener('camera-change', () => {
+      b.cameraOrbit = a.cameraOrbit;
+      b.cameraTarget = a.cameraTarget;
+    });
+  }
+  syncCameras(originalModel, editedModel);
+  syncCameras(editedModel, originalModel);
+  
+  // Init
+  loadObject('plant');
+  </script>
+  
+  <style>
+    .thumbnail-obj {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 4px solid transparent;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .thumbnail-obj:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .thumbnail-obj.active {
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.3);
+    }
+    #editPanel {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+  </style>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- Approach. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Approach</h2>
+
+          <div class="content has-text-justified">
+            <p style="font-size: 20px; color: black;">
+              <b>Steer3D</b> adapts ControlNet to 3D generation, and thus injects text steerability to pretrained image-to-3D models.
+              As shown below, given an image (e.g. of a crab), existing image-to-3D models can generate a 3D crab that looks like the image.
+              <b>Steer3D</b> allows the user to edit the 3D crab with language, such as "replacing its legs with sleek robotic limbs colored silver".
+              The new crab aligns with the editing text, and keeps consistent with the original crab.
+              <b>Steer3D</b> trains on 100k-scale synthetic data generated by our automated data engine. Our data engine combines existing image-to-3D models and vision language models to provide editing pairs that are diverse, consistent, and correct.
+              Both our scalable data engine approach and our data-efficient architecture design help yield a strong editing model.
+            </p>
+            <div style="text-align: center;">
+            <img src="static/images/teaser.png" alt="qualitative" width="85%">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h3 class="title is-4">Architecture and Recipe</h3>
+
+          <div class="content has-text-justified">
+            <p style="font-size: 20px; color: black;">
+              To facilitate data-efficient training, we design a ControlNet-based architecture to leverage the shape and geometry prior of pretrained image-to-3D models. The architecture is shown below.
+              We design a two-stage training recipe based on flow-matching training and Direct Preference Optimization (DPO) to avoid the trivial local minumum of "no edit". More details can be found in the paper!
+            </p>
+            <div style="text-align: center;">
+            <img src="static/images/controlnet.png" center alt="qualitative" width="60%">
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <!-- Approach. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-4">Data Engine</h2>
+
+          <div class="content has-text-justified">
+            <p style="font-size: 20px; color: black;">
+              We build a data engine to generate synthetic data with a two-stage filter to provide diverse, consistent, and correct editing pairs as our training data. Check out the paper for our scaling analysis that backs up the importance of this scalable data strategy!
+            </p>
+            <div style="text-align: center;">
+            <img src="static/images/dataengine.png" center alt="qualitative" width="100%">
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
+  
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@misc{ma20243d,
+        title={Feedforward 3D Editing via Text-Steerable Image-to-3D}, 
+        author={Ziqi Ma and Hongqiao Chen and Yisong Yue and Georgia Gkioxari},
+        year={2025},
+        eprint={2411.13550},
+        archivePrefix={arXiv},
+        primaryClass={cs.CV},
+        url={https://arxiv.org/abs/2411.13550}, 
+  }</code></pre>
+    </div>
+  </section>
+
+
+  <div id="modal" class="modal">
+    <div class="modal-background"></div>
+
+    <div class="modal-content">
+      <div id='plot-loading-div' class="box">
+        Loading model...
+      </div>
+      <div id='plot-div'></div>
+    </div>
+
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+
+  <div class="footer">
+    <p style="font-size: 12px; color: gray;">
+        This website builds upon the template of <a href="https://mcc3d.github.io/">MCC</a>.
+    </p>
+</div>
+
+</body>
+
+</html>
